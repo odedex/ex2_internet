@@ -1,46 +1,74 @@
-function loginFunc() {
+function hideElement(elementID) {
+    document.getElementById(elementID).style.display = 'none';
+}
+
+function showElement(elementID) {
+    document.getElementById(elementID).style.display = 'block';
+}
+
+function clearElementValue (elementID) {
+    document.getElementById(elementID).value = '';
+}
+
+function doLogin() {
     var uname = document.getElementById('uname_input').value;
-    if (uname === document.getElementById('pword_input').value) {
-        if (uname === 'admin') {
-            document.getElementById('page1').style.display = 'none';
-            document.getElementById('page2').style.display = 'block';
-            document.getElementById('uname_input').value = '';
-            document.getElementById('pword_input').value = '';
+    if (uname === document.getElementById('pword_input').value && uname === "admin") {
+            if (document.getElementById('page2') === null) {
+                BuildProfilePage();
+            }
+            hideElement('page1');
+            showElement('page2');
+            clearElementValue('uname_input');
+            clearElementValue('pword_input');
             return;
-        }
     }
     alert("bad login");
 }
 
 function logoutFunc() {
-    document.getElementById('page2').style.display = 'none';
-    document.getElementById('page1').style.display = 'block';
+    hideElement('page2');
+    showElement('page1');
     alert("you logged out successfully")
 }
 
 function calculatorFunc() {
-    document.getElementById('page2').style.display = 'none';
-    document.getElementById('page3').style.display = 'block';
+    if (document.getElementById('page3') === null) {
+        BuildCalcPage();
+    }
+    hideElement('page2');
+    showElement('page3');
 }
 
-function BuildDiv1() {
-    var curDiv = document.getElementById('page1');
+function BuildLoginPage() {
+    var curDiv = document.createElement('div');
+    curDiv.id = 'page1';
+    curDiv.className = 'contentPage';
+    curDiv.style.display = 'block';
+
+    var formElement = document.createElement('form');
+    formElement.action = 'javascript:doLogin()';
 
     var inputsDiv = document.createElement('div');
-    inputsDiv.id = 'inputsDiv;'; // todo: maybe redundant
-    inputsDiv.innerHTML = 'Username: <input type="text" id="uname_input"><br>Password: <input type="password" id="pword_input">';
-    curDiv.appendChild(inputsDiv);
+    inputsDiv.innerHTML = '<span>Username: </span><input type="text" id="uname_input"><br>' +
+                            '<span>Password: </span><input type="password" id="pword_input">';
+    formElement.appendChild(inputsDiv);
 
     var buttonDiv = document.createElement('div');
-    buttonDiv.innerHTML = '<input id="loginButton" type="submit" value="Login" class="actionButton" onclick="loginFunc();" />';
-    curDiv.appendChild(buttonDiv);
+    buttonDiv.innerHTML = '<input id="loginButton" type="submit" value="Login" class="actionButton"/>';
+    formElement.appendChild(buttonDiv);
+
+    curDiv.appendChild(formElement);
+    document.body.appendChild(curDiv);
 }
 
-function BuildDiv2() {
-    var curDiv = document.getElementById('page2');
+function BuildProfilePage() {
+    var curDiv = document.createElement('div');
+    curDiv.id = 'page2';
+    curDiv.className = 'contentPage';
+    curDiv.style.display = 'none';
 
     var textDiv = document.createElement('div');
-    textDiv.id = 'textDiv';
+    textDiv.id = 'profileText';
     textDiv.innerHTML = 'My name is Oded Abrams, I\'m a 3rd year student in Hebrew University.<br>' +
         'I like playing video games, movies and tv shows. I also like getting 100s in the course <br>' +
         'Internet Technologies.<br>' +
@@ -52,26 +80,33 @@ function BuildDiv2() {
     curDiv.appendChild(imagesDiv);
 
     var buttonsDiv = document.createElement('div');
-    buttonsDiv.id = 'buttonsDiv';
-    buttonsDiv.innerHTML = '<input id="logoutButton" type="submit" value="Logout" class="actionButton" onclick="logoutFunc();" />';
-    buttonsDiv.innerHTML += '<input id="calcButton2" type="submit" value="Calculator" class="actionButton" onclick="calculatorFunc();" />';
-    curDiv.appendChild(buttonsDiv)
+    buttonsDiv.innerHTML = '<input id="logoutButton" type="submit" value="Logout" class="actionButton" onclick="logoutFunc();" />' +
+                            '<input id="calcButton2" type="submit" value="Calculator" class="actionButton" onclick="calculatorFunc();" />';
+    curDiv.appendChild(buttonsDiv);
+    document.body.appendChild(curDiv);
 }
 
-var calcCount = 0;
-var calcButtons = ['0','1','2','3','4','5','6','7','8','9','+','-','*','='];
+var calcButtons = ['1','2','3','4','5','6','7','8','9','0','+','-','*','='];
 var calculators = [];
 
 function executeCalcFunc(var1, func, var2){
-    if (func === '+') {
-        return parseInt(var1) + parseInt(var2);
+    var varInt1 = parseInt(var1);
+    var varInt2 = parseInt(var2);
+    var returnVal;
+    switch (func) {
+        case '+':
+            returnVal = varInt1 + varInt2;
+            break;
+        case '-':
+            returnVal = varInt1 - varInt2;
+            break;
+        case '*':
+            returnVal = varInt1 * varInt2;
+            break;
+        default:
+            returnVal = varInt1;
     }
-    if (func === '-') {
-        return parseInt(var1) - parseInt(var2);
-    }
-    if (func === '*') {
-        return parseInt(var1) * parseInt(var2);
-    }
+    return returnVal;
 }
 
 function handleCalc(calcButton) {
@@ -82,31 +117,31 @@ function handleCalc(calcButton) {
 }
 
 function Calc() {
-    var calcID = calcCount;
-    calcCount += 1;
+    var calcID = calculators.length;
     var curValue = 0;
     var newValue = 0;
     var curFunc = undefined;
     this.doCalc = function (calcFunc) {
         if (calcFunc === '=') {
+            if (curFunc === undefined) {
+                return curValue;
+            }
             curValue = executeCalcFunc(curValue, curFunc, newValue);
             return curValue;
         }
         else if (isNaN(calcFunc)) {
-            if (curFunc === undefined) {
-                curValue = newValue;
-            }
             newValue = 0;
             curFunc = calcFunc;
             return newValue;
         }
         else {
+            if (curFunc === undefined) {
+                curValue = (curValue * 10) + parseInt(calcFunc);
+                return curValue;
+            }
             newValue = (newValue * 10) + parseInt(calcFunc);
             return newValue;
         }
-    };
-    this.getID = function () {
-        return calcID;
     };
 
 
@@ -114,12 +149,12 @@ function Calc() {
     var calcDiv = document.createElement('div');
 
     calcDiv.id = 'calcDiv' + calcID.toString();
-    calcDiv.className = 'calculatorDiv';
+    calcDiv.className = 'calculator';
     calcDiv.innerHTML += '<textarea id="' + calcID.toString() +'_val" disabled></textarea>';
 
     var buttonsDiv = document.createElement('div');
     for (var i = 0 ; i < calcButtons.length ; i++) {
-        buttonsDiv.innerHTML += '<input id="' + calcID.toString() + '_' + calcButtons[i] + '" type="submit" value="'+calcButtons[i]+'" onclick="handleCalc(this);" />';
+        buttonsDiv.innerHTML += '<input id="' + calcID.toString() + '_' + calcButtons[i] + '" type="button" value="'+calcButtons[i]+'" onclick="handleCalc(this);" />';
     }
 
     calcDiv.appendChild(buttonsDiv);
@@ -130,31 +165,19 @@ function Calc() {
 
 }
 
-function BuildDiv3() {
-    var curDiv = document.getElementById('page3');
+function BuildCalcPage() {
+    var curDiv = document.createElement('div');
+    curDiv.id = 'page3';
+    curDiv.className = 'contentPage';
+    curDiv.style.display = 'none';
+    document.body.appendChild(curDiv);
     curDiv.innerHTML += '<input id="calcButton3" type="submit" value="Calculator" class="actionButton" onclick="calculators.push(new Calc());" />';
     calculators.push(new Calc());
 
 }
 
 function onLoad(){
-
-    var curDiv;
-    for (var i = 1 ; i <= 3 ; i++) {
-        curDiv = document.createElement('div');
-        curDiv.id = 'page' + i.toString();
-        curDiv.className = 'contentDiv';
-        if (i === 1) {
-            curDiv.style.display = 'block'
-        }
-        else {
-            curDiv.style.display = 'none'
-        }
-        document.body.appendChild(curDiv)
-    }
-    BuildDiv1();
-    BuildDiv2();
-    BuildDiv3();
+    BuildLoginPage();
 }
 
 onLoad();

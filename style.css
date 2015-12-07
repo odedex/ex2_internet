@@ -2,7 +2,7 @@ body {
     background-color: azure;
 }
 
-.contentDiv {
+.contentPage {
     text-align: center;
     padding-top: 10%;
 }
@@ -63,6 +63,6 @@ textarea {
     width: 15%;
 }
 
-.calculatorDiv {
+.calculator {
     margin-top: 1%;
 }
